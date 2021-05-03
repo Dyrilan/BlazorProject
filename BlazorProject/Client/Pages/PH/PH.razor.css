@@ -1,0 +1,38 @@
+﻿body {
+    
+}
+
+.searchBox{
+    margin-bottom: 1em;
+}
+
+h3 {
+    margin-bottom: 1em;
+}
+
+.addButton{    
+    max-height: 30px;
+}
+
+@media (max-width: 309px) {
+    .addButton {
+        margin-bottom: 1em;
+        width: 203px;
+    }
+}
+
+.linkButton {
+    background: none !important;
+    border: none;
+    padding: 0 !important;
+    /*optional*/
+    font-family: arial, sans-serif;
+    /*input has OS specific font-family*/
+    color: #037EE2;
+    cursor: pointer;
+}
+
+.linkButton :hover {
+    text-decoration: underline;
+}
+

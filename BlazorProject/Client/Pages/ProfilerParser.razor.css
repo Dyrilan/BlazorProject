@@ -1,0 +1,30 @@
+﻿body {
+    
+}
+
+.searchBox{
+    margin-bottom: 1em;
+}
+
+h3 {
+    margin-bottom: 1em;
+}
+
+.addButton{    
+    max-height: 30px;
+}
+
+@media (max-width: 309px) {
+    .addButton {
+        margin-bottom: 1em;
+        width: 203px;
+    }
+}
+
+p {
+    margin-bottom: 0px !important
+}
+
+.dataLines{    
+    margin-left:450px;
+}
