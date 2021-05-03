@@ -1,0 +1,47 @@
+﻿@page "/ph/Edit"
+
+@using BlazorProject.Shared.Models
+@using Microsoft.Extensions.Logging
+@inject ILogger<PHEdit> Logger
+
+@inject HttpClient Http
+
+<h3>Edit food</h3>
+
+<EditForm Model="@PhItem" OnValidSubmit="@HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <label>Name: </label>
+    <InputText id="name" @bind-Value="PhItem.Name"/>
+
+    <label>pH: </label>
+    <InputNumber id="value" @bind-Value="PhItem.Value"/>
+
+    <button type="button" @onclick="() => EditItemAsync()">Submit</button>
+</EditForm>
+
+<NavLink href="/ph">Back</NavLink>
+
+@if(ResultMessage != null)
+{
+    <p>@ResultMessage</p>
+}
+
+@code {
+    private string ResultMessage;
+
+    private PHItem PhItem { get; set; } = new();
+
+    private async Task EditItemAsync()
+    {
+        var result = await Http.PostAsJsonAsync<PHItem>("/api/pH/Edit", PhItem);
+
+        ResultMessage = await result.Content.ReadAsStringAsync();
+    }
+
+    private void HandleValidSubmit()
+    {
+        Logger.LogInformation("HandleValidSubmit called");
+    }
+}
