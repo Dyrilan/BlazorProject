@@ -50,10 +50,9 @@ namespace BlazorProject.Server.Controllers
             {
                 fifaCards = await _fileService.ReadFifaFileAsync();
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-
-                _logger.LogError("Unable to read from FifaCards to file");
+                _logger.LogError(ex.Message);
             }
 
             return fifaCards;
@@ -65,10 +64,9 @@ namespace BlazorProject.Server.Controllers
             {
                 await _fileService.WriteToFifaFileAsync(fifaCards);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-
-                _logger.LogError("Unable to write FifaCards to file");
+                _logger.LogError(ex.Message);
             }
         }
 
