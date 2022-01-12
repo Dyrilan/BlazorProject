@@ -2,12 +2,18 @@
 
 @using System.Linq;
 @using System.IO
+@using System.Globalization;
 
 @inject HttpClient Http
 
-<h3>Profiler</h3>
-
+<h3>Profiler Parser</h3>
 <div>
+    <p>
+        Profiler Parser is used to highlight weakauras "addons" which has high ms. Still WIP
+    </p>
+</div>
+
+<div style="margin-top: 30px">
     <label>Show only highlighted: </label>
     <input type="checkbox" checked=@onlyHighlited @onchange="CheckboxClicked" />
 </div>
@@ -21,7 +27,8 @@
 </div>
 
 <div style="float:left">
-    <textarea @oninput="HandleOnChange" rows="20" cols="50">@data</textarea>
+    <textarea @oninput="HandleOnChange" rows="20" cols="50" @bind="inputData"></textarea>
+
 </div>
 
 <div class="dataLines">
@@ -50,16 +57,47 @@
     }
 </div>
 
+<div style="float: left; width: 75%">
+    <h2>
+        Profiler output example:   (copy this into textbox)
+    </h2>
+    <p>
+        Total time: 4879.95ms<br>
+        Time inside WA: 70.65ms (0.12ms)<br>
+        Time spent inside WA: 1.45%<br>
+        <br>
+        Systems:<br>
+        timer tick 48.06ms, 68.02% (0.11ms)<br>
+        generictrigger FRAME_UPDATE 19.63ms, 27.79% (0.10ms)<br>
+        dynamic conditions 1.95ms, 2.76% (0.04ms)<br>
+        bufftrigger2 0.86ms, 1.22% (0.00ms)<br>
+        load 0.12ms, 0.17% (0.01ms)<br>
+        <br>
+        Auras:<br>
+        Total time attributed to auras:<br>
+        Maelstrom - Bar 16.43ms, 28.48% (0.08ms)<br>
+        Crash Lightning - Buff 15.53ms, 26.91% (0.10ms)<br>
+        Healing Rain 7.82ms, 13.55% (0.05ms)<br>
+        Maelstrom Weapon - Bar 5 3.75ms, 6.50% (0.03ms)<br>
+        Maelstrom Weapon - Bar 3 3.52ms, 6.11% (0.01ms)<br>
+        Maelstrom Weapon - Bar 1 3.35ms, 5.80% (0.05ms)<br>
+        Maelstrom Weapon - Bar 2 3.32ms, 5.76% (0.02ms)<br>
+        Maelstrom Weapon - Bar 4 3.19ms, 5.52% (0.02ms)<br>
+        Earth Shock 0.78ms, 1.35% (0.04ms)<br>
+    </p>
+</div>
+
 
 @code {
-    private bool onlyHighlited = true;
+    private bool onlyHighlited = false;
     private double highMsValue = 0.8;
-    private string data;
+    private string inputData;
     private List<string> extractedLines = new List<string>();
     private List<string> highlightedLines = new List<string>();
 
     private void HighlightHighMs(IEnumerable<string> data, double highMs)
     {
+        Console.WriteLine(highMs);
         Dictionary<string, (double percentage, double ms)> linesDictionary = new() { };
 
         try
@@ -72,10 +110,11 @@
                 if (valueIndex != -1 && percentageIndex != -1 && percentageIndex >= 5)
                 {
                     string value = line.Substring(valueIndex + 1, 4);
-                    var isValueParsed = double.TryParse(value, out var parsedValue);
+                    var isValueParsed = double.TryParse(value, NumberStyles.AllowDecimalPoint | NumberStyles.AllowThousands, CultureInfo.InvariantCulture, out var parsedValue);
 
                     string percentage = line.Substring(percentageIndex - 5, 4);
-                    var isPercentageParsed = double.TryParse(percentage, out var parsedPercentage);
+
+                    var isPercentageParsed = double.TryParse(percentage.Trim(), NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out var parsedPercentage);
 
                     if (isValueParsed && isPercentageParsed && !linesDictionary.ContainsKey(line))
                     {
@@ -92,6 +131,7 @@
 
 
         var list = new List<string>();
+
         foreach (var line in linesDictionary.OrderByDescending(x => x.Value.percentage))
         {
             if (line.Value.ms > highMs)
@@ -121,13 +161,14 @@
             {
                 data.Add(lines[index]);
             }
-        }
+        }        
 
         return data;
     }
 
     private void HandleOnChange(ChangeEventArgs args)
     {
+
         var lines = args.Value.ToString().Split("\n");
 
         if (lines.ToList().Count > 1)
@@ -135,6 +176,12 @@
             extractedLines = GetAurasLines(lines.ToList());
 
             HighlightHighMs(extractedLines, highMsValue);
+        }
+
+        else
+        {
+            extractedLines.Clear();
+            highlightedLines.Clear();
         }
     }
 
@@ -188,15 +235,17 @@
     {
         var dataList = new List<IEnumerable<string>>();
 
-        foreach (var(file, content) in loadedFiles)
+        inputData = "";
+        foreach (var (file, content) in loadedFiles)
         {
+            inputData = inputData + content;
             dataList.Add(GetAurasLines(content.Split("\n").ToList()));
         }
 
         var list = new List<string>();
-        foreach(var data in dataList)
+        foreach (var data in dataList)
         {
-            foreach(var line in data)
+            foreach (var line in data)
             {
                 list.Add(line);
             }

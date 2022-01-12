@@ -1,0 +1,17 @@
+﻿InputNumber, label {
+    display: block;
+}
+
+button {
+    margin-top: 5px;
+}
+
+.COGCalculationForm {
+    width: 33%;
+    margin-top: 24px;
+    box-sizing: border-box;
+    position: relative;
+    display: block;
+    text-align: center;
+    float: left;
+}

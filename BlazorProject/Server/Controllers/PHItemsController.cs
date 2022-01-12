@@ -21,7 +21,6 @@ namespace BlazorProject.Server.Controllers
         {
             _logger = logger;
             _contextFactory = contextFactory;
-
         }
 
         [HttpGet]
@@ -56,7 +55,6 @@ namespace BlazorProject.Server.Controllers
         [HttpPost("/api/pH/Delete")]
         public async Task<string> Delete(PHItem pHItem)
         {
-            //there is little to no chance to actually not have item in DB
             if (await ItemExistsInDatabase(pHItem.Name))
             {
                 using (var context = _contextFactory.CreateDbContext())
@@ -90,7 +88,7 @@ namespace BlazorProject.Server.Controllers
             return $"{pHItem.Name} doesnt exist";
         }
 
-        public async Task<bool> ItemExistsInDatabase(string name)
+        private async Task<bool> ItemExistsInDatabase(string name)
         {
             var values = await _contextFactory.CreateDbContext().PHItems.Where(x => x.Name == name).ToListAsync();
 

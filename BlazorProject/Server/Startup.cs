@@ -1,14 +1,14 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using System.Linq;
 using Blazored.Modal;
 using BlazorProject.Server.Data;
+using System.Net;
+using BlazorProject.Server.Services;
+using BlazorProject.Server.Services.Interfaces;
 
 namespace BlazorProject.Server
 {
@@ -25,14 +25,21 @@ namespace BlazorProject.Server
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddScoped<ICalculatorService, CalculatorService>();
+            services.AddScoped<IScrappingService, ScrappingService>();
+            services.AddScoped<IFileService, FileService>();
 
             services.AddControllersWithViews();
             services.AddRazorPages();
             services.AddBlazoredModal();
-            services.AddDbContextFactory<PHContext>(options => options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
+            services.AddDbContextFactory<PHContext>(options => options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));            
 
             services.AddDatabaseDeveloperPageExceptionFilter();
-
+            services.AddHttpsRedirection(options =>
+            {
+                options.RedirectStatusCode = (int)HttpStatusCode.PermanentRedirect;
+                options.HttpsPort = 443;
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

@@ -1,0 +1,114 @@
+﻿@page "/vypocettaziska"
+
+@using System.Linq;
+@using System.IO
+@using BlazorProject.Client.Models
+
+<h3>Vypocet Taziska</h3>
+<p>Unfinished !!!</p>
+
+    
+    <div class="COGCalculationForm">
+        <h4>Vypocet Taziska osi X</h4>
+        <img src="/Assets/CarX.png" class="img-responsive" />
+
+        <EditForm Model="@COGCalculationModel" OnValidSubmit="@CalculateX">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            <div>
+                <label> hmostnost zadej napravy (kg): </label>
+                <InputNumber id="rearWheelBaseWeight" @bind-Value="COGCalculationModel.RearWheelBaseWeight" />
+            </div>
+            <div>
+                <label> celkova hmotnost vozidla (kg): </label>
+                <InputNumber id="carWeight" @bind-Value="COGCalculationModel.CarWeight" />
+            </div>
+            <div>
+                <label> vzdialenost naprav (m): </label>
+                <InputNumber id="wheelBase" @bind-Value="COGCalculationModel.WheelBase" />
+            </div>
+
+            <button style="margin-bottom: 5px" type="submit">Submit</button>
+        </EditForm>
+        
+        <div>
+            <p>Tazisko na osi X: @xT</p>
+        </div>    
+    </div>
+
+    <div class="COGCalculationForm">
+        <h4>Vypocet Taziska osi Y</h4>
+        <img src="/Assets/CarY.png" class="img-responsive" />
+
+        <EditForm Model="@COGCalculationModel" OnValidSubmit="@CalculateY">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            <div>
+                <label> hmostnost pravej strany vozidla (kg): </label>
+                <InputNumber id="rearWheelBaseWeight" @bind-Value="COGCalculationModel.RightSideWeight" />
+            </div>
+            <div>
+                <label> celkova hmotnost vozidla (kg): </label>
+                <InputNumber id="carWeight" @bind-Value="COGCalculationModel.CarWeight2" />
+            </div>
+            <div>
+                <label> sirka napravy (m): </label>
+                <InputNumber id="wheelBase" @bind-Value="COGCalculationModel.Track" />
+            </div>
+
+            <button style="margin-bottom: 5px" type="submit">Submit</button>
+        </EditForm>
+
+        <div>
+            <p>Tazisko na osi Y: @yT</p>
+        </div>
+    </div>
+
+    <div class="COGCalculationForm">
+        <h4>Vypocet Taziska osi Z</h4>
+        <img src="/Assets/CarZ.png" class="img-responsive" />
+
+        <EditForm Model="@COGCalculationModel" OnValidSubmit="@CalculateY">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            @*<div>
+                <label> hmostnost pravej strany vozidla (kg): </label>
+                <InputNumber id="rearWheelBaseWeight" @bind-Value="COGCalculationModel.RightSideWeight" />
+            </div>
+            <div>
+                <label> celkova hmotnost vozidla (kg): </label>
+                <InputNumber id="carWeight" @bind-Value="COGCalculationModel.CarWeight2" />
+            </div>
+            <div>
+                <label> sirka napravy (m): </label>
+                <InputNumber id="wheelBase" @bind-Value="COGCalculationModel.Track" />
+            </div>*@
+
+            <!--<button style="margin-bottom: 5px" type="submit">Submit</button>-->
+        </EditForm>
+
+        <div>
+            <p>Tazisko na osi Z: @yT</p>
+        </div>
+    </div>
+
+@code {
+
+    private double xT;
+    private double yT;
+
+    public COGCalculationModel COGCalculationModel = new COGCalculationModel();
+
+    private void CalculateX()
+    {
+        xT = COGCalculationModel.RearWheelBaseWeight / COGCalculationModel.CarWeight * COGCalculationModel.WheelBase;
+    }
+
+    private void CalculateY()
+    {
+        yT = COGCalculationModel.RightSideWeight / COGCalculationModel.CarWeight2 * COGCalculationModel.Track;
+    }
+}

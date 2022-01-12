@@ -1,0 +1,86 @@
+﻿@page "/fifa"
+@inject HttpClient Http
+
+<h1 class="row">Fifa SBC calculator</h1>
+<div style="width: 75%">
+    <p>This site is used to calculate cheapest solution to finish Fifa <a href="https://www.futbin.com/squad-building-challenges/ALL/356" target="_blank">SBC</a>. To finish this SBC you have to create teams with different ratings. Solutions table contains best possible player ratings to finish team rating with best possible price.</p>
+</div>
+<div class="row">    
+    <div class="column">
+        <h3>Solutions:</h3>
+        <h4 style="float: left">Price: @_value Ratings: @_name</h4>
+        <button @onclick="ResetValues" style="float: right">Reset</button>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>
+                        Team rating
+                    </th>
+                    <th>
+                        Player picks
+                    </th>
+                    <th>
+                        Team price
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (results != null)
+                {
+                    @foreach (var (name, solution, value) in results.OrderByDescending(x => x.Item1))
+                    {
+                        <tr>
+                            <td><a href="https://www.futbin.com/players?page=1&player_rating=@name-@name&pc_price=200-15000000&sort=pc_price&order=asc" target="_blank">@name</a></td>
+                            <td>@solution</td>
+                            <td><button @onclick="() => AddValues(value, name.ToString())">@value</button></td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <div class="column">
+        <h3>Player prices:</h3>
+        @if (_fifaCards != null)
+        {
+            <button @onclick="ChangeFifaCardPrices" style="margin-bottom:7px">Update Prices</button>
+        }
+        @if (_fifaCards == null)
+        {
+            <button @onclick="ChangeFifaCardPrices" disabled style="margin-bottom:7px">@counter</button>
+        }
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>
+                        Player rating
+                    </th>
+                    <th>
+                        Player price
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (_fifaCards != null)
+                {
+                    @foreach (var item in _fifaCards)
+                    {
+                        <tr>
+                            <td>@item.Rating</td>
+                            <td>@item.Price</td>
+                        </tr>
+                    }
+                }
+                @if (_fifaCards == null)
+                {
+                    <div style="padding-top: 20%; padding-left: 50%">
+                        <div class="loader"></div>
+                    </div>
+
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+

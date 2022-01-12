@@ -1,13 +1,14 @@
 ﻿@page "/ph"
 
 @using BlazorProject.Shared.Models
+@using BlazorProject.Shared.Enums
 
 @inject HttpClient Http
 
 <h3>pH of food</h3>
 
 <div>
-    <input class="searchBox" type="text" id="search" name="search" @bind-value="SearchText" @bind-value:event="oninput" placeholder="Search by name" />
+    <input class="searchBox" type="text" id="search" name="search" autocomplete="off" @bind-value="SearchText" @bind-value:event="oninput" placeholder="Search by name" />
     <NavLink href="/ph/Add">Add</NavLink>
 </div>
 
@@ -22,21 +23,21 @@ else
         <p>@ResultMessage</p>
     }
 
-    if (EditFormShow)
+    if (ShowEditForm)
     {
-    <EditForm Model="@PhItem">
-        <DataAnnotationsValidator />
-        <ValidationSummary />
-    
-        <label>Name: </label>
-        <InputText id="name" @bind-Value="PhItem.Name" />
-    
-        <label>pH: </label>
-        <InputNumber id="value" @bind-Value="PhItem.Value" />
-    
-        <button type="button" @onclick="() => EditAsync(PhItem)">Submit</button>
-        <button type="button" @onclick="() => ShowEditForm()">Close</button>
-    </EditForm>
+        <EditForm Model="@PhItem">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            <label>Name: </label>
+            <InputText id="name" @bind-Value="PhItem.Name" />
+
+            <label>pH: </label>
+            <InputNumber id="value" @bind-Value="PhItem.Value" />
+
+            <button type="button" @onclick="() => EditAsync(PhItem)">Submit</button>
+            <button type="button" @onclick="() => SetShowEditForm()">Close</button>
+        </EditForm>
     }
 
     <table class="table">
@@ -55,146 +56,157 @@ else
                 <tr>
                     <td>@pHItem.Name</td>
                     <td style="color:@GetPHColor(pHItem.Value)">@pHItem.Value</td>
-                    <!--<td><NavLink href="/ph/Edit" class="linkButton">Edit</NavLink> / <input @onclick="() => DeleteAsync(pHItem)" name="delete" type="submit" class="linkButton" value="Delete" /></td>-->
-                    <td><input @onclick="ShowEditForm" name="Edit" type="submit" class="linkButton" value="Edit" /> / <input @onclick="() => DeleteAsync(pHItem)" name="delete" type="submit" class="linkButton" value="Delete" /></td>
+                    <td><input @onclick="SetShowEditForm" name="Edit" type="submit" class="linkButton" value="Edit" /> / <input @onclick="() => DeleteAsync(pHItem)" name="delete" type="submit" class="linkButton" value="Delete" /></td>
                 </tr>
-              }
+            }
         </tbody>
     </table>
 }
 
-            @code {
-                private PHItem[] pHItems;
-                private string SearchText = "";
+@code {
+    private PHItem[] pHItems;
+    private string SearchText = "";
+    private PHItem PhItem { get; set; }
+    private bool ShowEditForm = false;
+
+    List<PHItem> FilteredpHItems => pHItems.Where(item => item.Name.ToLower().Contains(SearchText.ToLower())).ToList();
+
+    protected override async Task OnInitializedAsync()
+    {
+        //pHItems = await Http.GetFromJsonAsync<PHItem[]>("PHItems");
+        pHItems = MockDBData();
+    }
+
+    private PHItem[] MockDBData()
+    {
+        return new PHItem[]
+        {
+                new PHItem{ ID = 0, Name = "Uhorka", Type = phItemType.vegetable, Value = 8},
+                new PHItem{ ID = 0, Name = "Rajcina", Type = phItemType.vegetable, Value = 5},
+                new PHItem{ ID = 0, Name = "Cokolada", Type = phItemType.other, Value = 2},
+                new PHItem{ ID = 0, Name = "Syr", Type = phItemType.animalproducts, Value = 3},
+        };
+    }
+
+    private bool orderedAscending = false;
+    private void Order(string propertyName)
+    {
+        if (!orderedAscending)
+        {
+            orderedAscending = !orderedAscending;
+            pHItems = pHItems.OrderBy(x => x.GetType().GetProperty(propertyName).GetValue(x, null)).ToArray();
+        }
+
+        else
+        {
+            pHItems = pHItems.OrderByDescending(x => x.GetType().GetProperty(propertyName).GetValue(x, null)).ToArray();
+            orderedAscending = !orderedAscending;
+        }
+    }
+
+    private string ResultMessage = null;
+    private async Task DeleteAsync(PHItem phItem)
+    {
+        var result = await Http.PostAsJsonAsync<PHItem>("/api/pH/Delete", phItem);
+
+        ResultMessage = await result.Content.ReadAsStringAsync();
+        await OnInitializedAsync();
+    }
 
 
-                List<PHItem> FilteredpHItems => pHItems.Where(item => item.Name.ToLower().Contains(SearchText.ToLower())).ToList();
+    private async Task EditAsync(PHItem phItem)
+    {
+        var result = await Http.PostAsJsonAsync<PHItem>("/api/pH/Edit", PhItem);
 
-                protected override async Task OnInitializedAsync()
-                {
-                    pHItems = await Http.GetFromJsonAsync<PHItem[]>("PHItems");
-                }
+        ResultMessage = await result.Content.ReadAsStringAsync();
+        SetShowEditForm();
+    }
 
-                private bool orderedAscending = false;
-                private void Order(string propertyName)
-                {
-                    if (!orderedAscending)
-                    {
-                        orderedAscending = !orderedAscending;
-                        pHItems = pHItems.OrderBy(x => x.GetType().GetProperty(propertyName).GetValue(x, null)).ToArray();
-                    }
+    private void SetShowEditForm()
+    {
+        ShowEditForm = !ShowEditForm;
+    }
 
-                    else
-                    {
-                        pHItems = pHItems.OrderByDescending(x => x.GetType().GetProperty(propertyName).GetValue(x, null)).ToArray();
-                        orderedAscending = !orderedAscending;
-                    }
-                }
+    private string GetPHColor(float value)
+    {
+        if (value == 0 || value < 1)
+        {
+            return "#EE1B22";
+        }
 
-                private string ResultMessage = null;
-                private async Task DeleteAsync(PHItem phItem)
-                {
-                    var result = await Http.PostAsJsonAsync<PHItem>("/api/pH/Delete", phItem);
+        if (value == 1 || value < 2)
+        {
+            return "#F16623";
+        }
 
-                    ResultMessage = await result.Content.ReadAsStringAsync();
-                    await OnInitializedAsync();
-                }
+        if (value == 2 || value < 3)
+        {
+            return "#F7C510";
+        }
 
-                private PHItem PhItem { get; set; }
-                private bool EditFormShow = false;
-                private async Task EditAsync(PHItem phItem)
-                {
-                    var result = await Http.PostAsJsonAsync<PHItem>("/api/pH/Edit", PhItem);
+        if (value == 3 || value < 4)
+        {
+            return "#F4EC1B";
+        }
 
-                    ResultMessage = await result.Content.ReadAsStringAsync();
-                    ShowEditForm();
-                }
+        if (value == 4 || value < 5)
+        {
+            return "#C1DC4D";
+        }
 
-                private void ShowEditForm()
-                {
-                    EditFormShow = !EditFormShow;
-                }
+        if (value == 5 || value < 6)
+        {
+            return "#B5D337";
+        }
 
-                private string GetPHColor(float value)
-                {
-                    if (value == 0 || value < 1)
-                    {
-                        return "#EE1B22";
-                    }
+        if (value == 6 || value < 7)
+        {
+            return "#70A636";
+        }
 
-                    if (value == 1 || value < 2)
-                    {
-                        return "#F16623";
-                    }
+        if (value == 7 || value < 8)
+        {
+            return "#42A854";
+        }
 
-                    if (value == 2 || value < 3)
-                    {
-                        return "#F7C510";
-                    }
+        if (value == 8 || value < 9)
+        {
+            return "#3DBF81";
+        }
 
-                    if (value == 3 || value < 4)
-                    {
-                        return "#F4EC1B";
-                    }
+        if (value == 9 || value < 10)
+        {
+            return "#26C6C4";
+        }
 
-                    if (value == 4 || value < 5)
-                    {
-                        return "#C1DC4D";
-                    }
+        if (value == 10 || value < 11)
+        {
+            return "#428CCB";
+        }
 
-                    if (value == 5 || value < 6)
-                    {
-                        return "#B5D337";
-                    }
+        if (value == 11 || value < 12)
+        {
+            return "#3852A6";
+        }
 
-                    if (value == 6 || value < 7)
-                    {
-                        return "#70A636";
-                    }
+        if (value == 12 || value < 13)
+        {
+            return "#5950A1";
+        }
 
-                    if (value == 7 || value < 8)
-                    {
-                        return "#42A854";
-                    }
+        if (value == 13 || value < 14)
+        {
+            return "#63459D";
+        }
 
-                    if (value == 8 || value < 9)
-                    {
-                        return "#3DBF81";
-                    }
+        if (value >= 14)
+        {
+            return "#452C80";
+        }
 
-                    if (value == 9 || value < 10)
-                    {
-                        return "#26C6C4";
-                    }
-
-                    if (value == 10 || value < 11)
-                    {
-                        return "#428CCB";
-                    }
-
-                    if (value == 11 || value < 12)
-                    {
-                        return "#3852A6";
-                    }
-
-                    if (value == 12 || value < 13)
-                    {
-                        return "#5950A1";
-                    }
-
-                    if (value == 13 || value < 14)
-                    {
-                        return "#63459D";
-                    }
-
-                    if (value >= 14)
-                    {
-                        return "#452C80";
-                    }
-
-                    else
-                    {
-                        return "#FFFFFF";
-                    }
-                }
-            }
+        else
+        {
+            return "#FFFFFF";
+        }
+    }
+}
