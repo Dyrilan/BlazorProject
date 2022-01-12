@@ -3,33 +3,30 @@ using HtmlAgilityPack;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
-using System.Threading;
+using System.Threading.Tasks;
 
 namespace BlazorProject.Server.Services
 {
     public class ScrappingService : IScrappingService
     {
-        public IEnumerable<double> FetchPricesFromFutbin(string link)
+        public async Task<IEnumerable<double>> FetchPricesFromFutbinAsync(string link)
         {
             Random r = new();
             int rInt = r.Next(4000, 6000);
-            Thread.Sleep(rInt);
+            await Task.Delay(rInt);
 
 
             var unparsedPrices = new List<string>();
 
             HtmlWeb web = new();
-            HtmlDocument document = web.Load(link);
+            HtmlDocument document = await web.LoadFromWebAsync(link);
 
-            var node = document.DocumentNode.SelectNodes("//*[@id=\"repTb\"]/tbody/tr[position() < 6]/td[5]/span");
+            var nodes = document.DocumentNode.SelectNodes("//*[@id=\"repTb\"]/tbody/tr[position() < 6]/td[5]/span");
 
-            node.ToList().ForEach(i => Console.WriteLine(i.InnerText));
-
-            foreach (var item in node)
+            Parallel.ForEach(nodes, item =>
             {
                 unparsedPrices.Add(item.InnerText.Trim(new Char[] { ' ', '.' }));
-            }
+            });
 
             var parsedPrices = GetPrices(unparsedPrices);
 

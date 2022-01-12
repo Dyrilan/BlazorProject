@@ -34,9 +34,9 @@ namespace BlazorProject.Server.Controllers
         }
 
         [HttpPost("/api/Fifa/ChangePrices")]
-        public async Task ChangeFifaCardPrices(IDictionary<int, string> data)
+        public async Task ChangeFifaCardPricesAsync(IDictionary<int, string> data)
         {
-            var fifaCards = GetFifaCards(data);
+            var fifaCards = await GetFifaCardsAsync(data);
 
             await WriteToFile(fifaCards);
         }
@@ -72,13 +72,13 @@ namespace BlazorProject.Server.Controllers
             }
         }
 
-        private List<FifaCard> GetFifaCards(IDictionary<int, string> data)
+        private async Task<List<FifaCard>> GetFifaCardsAsync(IDictionary<int, string> data)
         {
             var fifaCards = new List<FifaCard>();
 
             foreach (var (rating, link) in data)
             {
-                var prices = _scrappingService.FetchPricesFromFutbin(link);
+                var prices = await _scrappingService.FetchPricesFromFutbinAsync(link);
                 var averagePrice = _calculator.CalculatePriceAverage(prices);
 
                 fifaCards.Add(new FifaCard
