@@ -48,7 +48,7 @@ namespace BlazorProject.Server.Controllers
 
             try
             {
-                fifaCards = await _fileService.ReadFifaFile();
+                fifaCards = await _fileService.ReadFifaFileAsync();
             }
             catch (Exception)
             {
@@ -63,7 +63,7 @@ namespace BlazorProject.Server.Controllers
         {
             try
             {
-                await _fileService.WriteToFifaFile(fifaCards);
+                await _fileService.WriteToFifaFileAsync(fifaCards);
             }
             catch (Exception)
             {

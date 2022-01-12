@@ -9,7 +9,7 @@ namespace BlazorProject.Server.Services
 {
     public class FileService : IFileService
     {
-        public async Task<List<FifaCard>> ReadFifaFile()
+        public async Task<List<FifaCard>> ReadFifaFileAsync()
         {
             string fileName = @"..\Server\FifaPrices.json";
 
@@ -19,7 +19,7 @@ namespace BlazorProject.Server.Services
             return fifaCards;
         }
 
-        public async Task WriteToFifaFile(IEnumerable<FifaCard> input)
+        public async Task WriteToFifaFileAsync(IEnumerable<FifaCard> input)
         {
             string fileName = @"..\Server\FifaPrices.json";
             using FileStream stream = File.Create(fileName);

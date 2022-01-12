@@ -6,7 +6,7 @@ namespace BlazorProject.Server.Services.Interfaces
 {
     public interface IFileService
     {
-        public Task<List<FifaCard>> ReadFifaFile();
-        public Task WriteToFifaFile(IEnumerable<FifaCard> input);
+        public Task<List<FifaCard>> ReadFifaFileAsync();
+        public Task WriteToFifaFileAsync(IEnumerable<FifaCard> input);
     }
 }
